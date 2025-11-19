@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base of Stars | Stellar IT Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Styles & Animations */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* Deep Space Black */
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, .brand-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Canvas positioned behind everything */
+        #star-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-nav {
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Text Gradients */
+        .text-glow-gradient {
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+        
+        .text-brand-gradient {
+            background: linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Button Glow */
+        .btn-cosmic {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cosmic::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-cosmic:hover::before {
+            left: 100%;
+        }
+
+        .btn-cosmic:hover {
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+
+    <!-- Dynamic Star Background -->
+    <canvas id="star-canvas"></canvas>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="sparkles" class="h-8 w-8 text-cyan-400"></i>
+                    <span class="brand-font text-2xl font-bold tracking-wider text-white">BASE OF <span class="text-brand-gradient">STARS</span></span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#home" class="hover:text-cyan-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">Mission Control</a>
+                        <a href="#services" class="hover:text-cyan-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">Constellations</a>
+                        <a href="#about" class="hover:text-cyan-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">The Base</a>
+                        <a href="#contact" class="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-full transition-all text-sm font-medium">Initiate Contact</a>
+                    </div>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white p-2">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Panel -->
+        <div id="mobile-menu" class="hidden md:hidden glass-panel border-t border-white/5">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Mission Control</a>
+                <a href="#services" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Constellations</a>
+                <a href="#about" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">The Base</a>
+                <a href="#contact" class="text-cyan-400 block px-3 py-2 rounded-md text-base font-medium">Initiate Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <main class="relative z-10">
+
+        <!-- Hero Section -->
+        <section id="home" class="min-h-screen flex items-center justify-center relative px-4 pt-20">
+            <!-- Decorative Orb -->
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/20 rounded-full blur-[120px] -z-10"></div>
+            
+            <div class="max-w-5xl mx-auto text-center">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 reveal animate-float">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    <span class="text-sm font-medium text-cyan-200">Systems Online. Ready for Launch.</span>
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight reveal">
+                    Engineering the Future <br />
+                    <span class="text-brand-gradient">One Star at a Time.</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 reveal">
+                    We are Base of Stars. We don't just write code; we build digital universes. From infinite scalability to stellar user experiences.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center reveal">
+                    <a href="#contact" class="btn-cosmic px-8 py-4 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold text-lg tracking-wide shadow-lg shadow-cyan-500/20">
+                        Launch Project
+                    </a>
+                    <a href="#services" class="px-8 py-4 rounded-full glass-panel hover:bg-white/10 transition-all text-white font-medium text-lg border border-white/20">
+                        Explore Services
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
+                <i data-lucide="chevron-down" class="w-8 h-8"></i>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="py-32 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-20 reveal">
+                    <h2 class="text-3xl md:text-5xl font-bold mb-4 text-glow-gradient">Constellations of Code</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">Our expertise connects to form a robust infrastructure for your business.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Card 1 -->
+                    <div class="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group reveal">
+                        <div class="w-14 h-14 rounded-xl bg-blue-500/20 flex items-center justify-center mb-6 text-blue-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="globe" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Web Development</h3>
+                        <p class="text-gray-400 leading-relaxed">High-performance web applications built with modern frameworks. Fast, responsive, and SEO optimized.</p>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group reveal" style="transition-delay: 100ms">
+                        <div class="w-14 h-14 rounded-xl bg-purple-500/20 flex items-center justify-center mb-6 text-purple-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="cpu" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">AI & Machine Learning</h3>
+                        <p class="text-gray-400 leading-relaxed">Intelligent algorithms that learn and adapt. Predictive analytics and automation to power your decisions.</p>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group reveal" style="transition-delay: 200ms">
+                        <div class="w-14 h-14 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-6 text-cyan-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="smartphone" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Mobile Universes</h3>
+                        <p class="text-gray-400 leading-relaxed">Native and cross-platform mobile apps that put your business in the palm of your user's hand.</p>
+                    </div>
+
+                     <!-- Card 4 -->
+                     <div class="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group reveal">
+                        <div class="w-14 h-14 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-6 text-emerald-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="cloud" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Cloud Nebula</h3>
+                        <p class="text-gray-400 leading-relaxed">Scalable cloud architecture on AWS, Azure, or GCP. Secure, reliable, and infinitely expanding.</p>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group reveal" style="transition-delay: 100ms">
+                        <div class="w-14 h-14 rounded-xl bg-orange-500/20 flex items-center justify-center mb-6 text-orange-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="shield-check" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Cyber Security</h3>
+                        <p class="text-gray-400 leading-relaxed">Fortified defenses for your digital assets. We protect the base so you can reach for the stars.</p>
+                    </div>
+
+                    <!-- Card 6 -->
+                    <div class="glass-panel p-8 rounded-2xl hover:-translate-y-2 transition-transform duration-300 group reveal" style="transition-delay: 200ms">
+                        <div class="w-14 h-14 rounded-xl bg-pink-500/20 flex items-center justify-center mb-6 text-pink-400 group-hover:scale-110 transition-transform">
+                            <i data-lucide="rocket" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Digital Strategy</h3>
+                        <p class="text-gray-400 leading-relaxed">We map the trajectory of your product launch to ensure maximum market impact.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-20 relative overflow-hidden">
+            <div class="absolute right-0 top-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] -z-10"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="reveal">
+                        <h2 class="text-3xl md:text-5xl font-bold mb-6">Why <span class="text-brand-gradient">Base of Stars?</span></h2>
+                        <p class="text-lg text-gray-300 mb-6 leading-relaxed">
+                            In the vast expanse of the digital world, it's easy to get lost in the void. We act as your <strong>Base</strong>—the solid foundation, the launchpad, the command center.
+                        </p>
+                        <p class="text-lg text-gray-300 mb-8 leading-relaxed">
+                            Our developers, designers, and strategists are the <strong>Stars</strong>—brilliant individually, but forming a powerful constellation when connected. We illuminate the path forward for your business.
+                        </p>
+                        
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="border-l-2 border-cyan-500 pl-4">
+                                <h4 class="text-4xl font-bold text-white">50+</h4>
+                                <p class="text-sm text-gray-400 uppercase tracking-wider mt-1">Systems Launched</p>
+                            </div>
+                            <div class="border-l-2 border-purple-500 pl-4">
+                                <h4 class="text-4xl font-bold text-white">99.9%</h4>
+                                <p class="text-sm text-gray-400 uppercase tracking-wider mt-1">Uptime Gravity</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative reveal">
+                        <!-- Abstract visual representation -->
+                        <div class="glass-panel aspect-square rounded-3xl relative p-8 flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 rounded-3xl"></div>
+                            
+                            <!-- Animated orbiting circles -->
+                            <div class="relative w-64 h-64 border border-white/10 rounded-full animate-[spin_10s_linear_infinite]">
+                                <div class="absolute -top-2 left-1/2 w-4 h-4 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)]"></div>
+                            </div>
+                            <div class="absolute w-48 h-48 border border-white/10 rounded-full animate-[spin_15s_linear_infinite_reverse]">
+                                <div class="absolute -bottom-2 left-1/2 w-4 h-4 bg-purple-400 rounded-full shadow-[0_0_15px_rgba(192,132,252,0.8)]"></div>
+                            </div>
+                            <div class="absolute w-32 h-32 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full blur-md opacity-80"></div>
+                             <div class="absolute w-32 h-32 flex items-center justify-center z-10">
+                                <i data-lucide="anchor" class="w-12 h-12 text-white"></i>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA / Contact Section -->
+        <section id="contact" class="py-32 relative">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="glass-panel rounded-3xl p-8 md:p-12 text-center border border-cyan-500/30 relative overflow-hidden reveal">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-purple-500/5"></div>
+                    
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 relative z-10">Ready to build something <span class="text-brand-gradient">Stellar?</span></h2>
+                    <p class="text-gray-400 mb-10 max-w-xl mx-auto relative z-10">
+                        Whether you need a simple landing page or a complex cloud ecosystem, our team is standing by on the comms.
+                    </p>
+                    
+                    <form class="max-w-md mx-auto space-y-4 relative z-10" onsubmit="event.preventDefault(); alert('Signal transmitted to Base of Stars Command.');">
+                        <div class="relative group">
+                            <input type="email" placeholder="Enter your email frequency" class="w-full bg-black/30 border border-white/10 rounded-lg px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors">
+                            <i data-lucide="radio-receiver" class="absolute right-4 top-4 text-gray-500 group-focus-within:text-cyan-500 transition-colors"></i>
+                        </div>
+                        <button type="submit" class="w-full btn-cosmic bg-white text-black font-bold py-4 rounded-lg hover:bg-gray-200 transition-colors">
+                            Transmit Signal
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/10 bg-black/50 backdrop-blur-lg pt-16 pb-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                    <div class="flex items-center gap-2 mb-4 md:mb-0">
+                        <i data-lucide="sparkles" class="h-6 w-6 text-cyan-400"></i>
+                        <span class="brand-font text-xl font-bold text-white">BASE OF STARS</span>
+                    </div>
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-gray-400 hover:text-cyan-400 transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-cyan-400 transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-cyan-400 transition-colors"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    </div>
+                </div>
+                <div class="text-center text-gray-500 text-sm">
+                    &copy; 2023 Base of Stars IT Solutions. All systems nominal.
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // --- STARFIELD ANIMATION ENGINE ---
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let stars = [];
+        const starCount = 300; // Density of stars
+
+        // Resize Handler
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Star Class
+        class Star {
+            constructor() {
+                this.reset();
+                // Start at random y instead of top for initial load
+                this.y = Math.random() * height;
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.z = Math.random() * 2 + 0.5; // Depth/Speed factor
+                this.size = Math.random() * 1.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.twinkleSpeed = Math.random() * 0.02;
+            }
+
+            update() {
+                // Move stars upwards slowly (like rising through space)
+                this.y -= this.z * 0.2;
+                
+                // Reset if off screen
+                if (this.y < 0) {
+                    this.y = height;
+                    this.x = Math.random() * width;
+                }
+
+                // Twinkle effect
+                this.opacity += this.twinkleSpeed;
+                if (this.opacity > 0.8 || this.opacity < 0.1) {
+                    this.twinkleSpeed = -this.twinkleSpeed;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fill();
+                
+                // Draw connecting lines to nearby stars occasionally (Constellation effect)
+                // Only for larger, brighter stars to save performance
+                if (this.size > 1.2 && this.opacity > 0.5) {
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = "white";
+                } else {
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
+
+        // Initialize Stars
+        for (let i = 0; i < starCount; i++) {
+            stars.push(new Star());
+        }
+
+        // Animation Loop
+        function animate() {
+            // Clear with a slight trail effect
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; 
+            ctx.fillRect(0, 0, width, height);
+
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // --- SCROLL REVEAL ANIMATION ---
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach((el) => {
+            observer.observe(el);
+        });
+
+        // --- NAVBAR SCROLL EFFECT ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-lg', 'bg-slate-950/90');
+            } else {
+                navbar.classList.remove('shadow-lg', 'bg-slate-950/90');
+            }
+        });
+
+    </script>
+</body>
+</html>
